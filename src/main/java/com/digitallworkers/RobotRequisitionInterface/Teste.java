@@ -11,37 +11,34 @@ import org.camunda.bpm.engine.variable.value.ObjectValue;
 
 public class Teste {
 
-	public static void main(String[] args) {
-		ExternalTaskClient client = ExternalTaskClient.create()
-				  .baseUrl("http://localhost:8080/engine-rest")
-				  .build();
+	 public static void main(String... args) throws InterruptedException {
+		    // bootstrap the client
+		    ExternalTaskClient client = ExternalTaskClient.create()
+		      .baseUrl("http://localhost:8080/engine-rest")
+		      .build();
 
-				// subscribe to the topic
-				client.subscribe("creditScoreChecker")
-				  .lockDuration(1000)
-				  .handler((externalTask, externalTaskService) -> {
-				  
-				    // retrieve a variable from the Workflow Engine
-				    int defaultScore = externalTask.getVariable("defaultScore");
+		    // subscribe to the topic
+		    client.subscribe("creditScoreChecker")
+		      .lockDuration(1000)
+		      .handler((externalTask, externalTaskService) -> {
 
-				    List<Integer> creditScores = 
-				      new ArrayList<>(Arrays.asList(defaultScore, 9, 1, 4, 10));
-				    
-				    // create an object typed variable
-				    ObjectValue creditScoresObject = Variables
-				      .objectValue(creditScores)
-				      .create();
+		        // retrieve a variable from the Workflow Engine
+		        int defaultScore = externalTask.getVariable("defaultScore");
 
-				    // set the recently created variable
-				    externalTask.setVariableTyped("creditScores", creditScoresObject);
+		        List<Integer> creditScores = new ArrayList<>(Arrays.asList(defaultScore, 9, 1, 4, 10));
 
-				    // complete the external task
-				    externalTaskService.complete(externalTask);
-				    
-				    System.out.println("The External Task " + externalTask.getId() 
-				      + " has been completed!");
+		        // create an object typed variable
+		        ObjectValue creditScoresObject = Variables
+		          .objectValue(creditScores)
+		          .create();
 
-				  }).open();
+		        // complete the external task
+		        externalTaskService.complete(externalTask);
+
+		        System.out.println("The External Task " + externalTask.getId() + " has been completed!");
+
+		      }).open();
 		  }
+
 }
 // TODO Auto-generated method stub
